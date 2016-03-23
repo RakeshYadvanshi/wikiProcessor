@@ -14,7 +14,25 @@
         <asp:Button ID="Button1" runat="server" OnClick="Button1_Click" Text="Button" />
         <br />
         <br />
-    <asp:GridView ID="gd" runat="server"></asp:GridView>
+    <asp:GridView ID="gd" runat="server" HtmlEncode="true" AutoGenerateColumns="False">
+        <Columns>
+            <asp:TemplateField HeaderText="Id">
+                <ItemTemplate>
+                    <asp:Label ID="Label1" runat="server" Text='<%# Eval("id") %>'></asp:Label>
+                </ItemTemplate>
+            </asp:TemplateField>
+            <asp:TemplateField HeaderText="Title">
+                <ItemTemplate>
+                    <span><%# Eval("Title") %></span>
+                </ItemTemplate>
+            </asp:TemplateField>
+            <asp:TemplateField HeaderText="text">
+                <ItemTemplate>
+                    <span><%# Eval("text") %></span>
+                </ItemTemplate>
+            </asp:TemplateField>
+        </Columns>
+        </asp:GridView>
     </div>
     </form>
 </body>

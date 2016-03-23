@@ -28,26 +28,28 @@ namespace WebApplication1
 
         protected void Button1_Click(object sender, EventArgs e)
         {
-            DataTable dt = new DataTable("result");
+            var dt = new DataTable("result");
             dt.Columns.Add("id", typeof(Int64));
             dt.Columns.Add("title", typeof(string));
-            IndexSearcher isIndexSearcher = Application["indexSearcher"] as IndexSearcher;
+            dt.Columns.Add("Text", typeof(string));
+            var isIndexSearcher = Application["indexSearcher"] as IndexSearcher;
 
-            SnowballAnalyzer analyzer = new SnowballAnalyzer(Version.LUCENE_30, "myname");
+            var analyzer = new SnowballAnalyzer(Version.LUCENE_30, "myname");
 
-            StandardAnalyzer saAnalyzer = new StandardAnalyzer(Version.LUCENE_30);
+            var saAnalyzer = new StandardAnalyzer(Version.LUCENE_30);
 
-            string query = TextBox1.Text.Replace(' ', '*');
-            QueryParser queryParser = new QueryParser(Version.LUCENE_30, "title", saAnalyzer);
-            Query qury = queryParser.Parse(query);
+            var query = TextBox1.Text.Replace(' ', '*');
+           var  queryParser = new MultiFieldQueryParser(Version.LUCENE_30,new string[] { "title", "plainText" }, saAnalyzer);
+            var qury = queryParser.Parse(query);
 
             // code highlighting
-            SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("<span style=\"background:yellow;\">", "</span>");
+            // SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("<span style=\"background:yellow;\">", "</span>");
+            var formatter = new SimpleHTMLFormatter("<b>", "</b>");
             var fragmenter = new SimpleFragmenter(50);
             IScorer eScorer = new QueryScorer(qury);
 
             IEncoder sEncoder = new SimpleHTMLEncoder();
-            Highlighter hl = new Highlighter(formatter, sEncoder, eScorer);
+            var hl = new Highlighter(formatter, sEncoder, eScorer);
             //for (int i = 0; i < hits.Length(); i++)
             //{
             //    Lucene.Net.Documents.Document doc = hits.Doc(i);
@@ -63,14 +65,18 @@ namespace WebApplication1
                 count.InnerHtml = result.Length.ToString();
 
 
-                for (int i = 0; i < (result.Count() >= 10 ? result.Count() : result.Count()); i++)
+                for (var i = 0; i < (result.Count() >= 10 ? result.Count() : result.Count()); i++)
                 {
-                    Document doc = isIndexSearcher.Doc(result[i].Doc);
-                    if (doc.Get("title") != null)
+                    var doc = isIndexSearcher.Doc(result[i].Doc);
+                    if (doc.Get("title") != null && doc.Get("plainText") !=null)
                     {
-                       TokenStream stream = saAnalyzer.TokenStream("title", new StringReader(doc.Get("title")));
-                        string highlightedText = hl.GetBestFragments(stream, doc.Get("title"), 1, "...");
-                        dt.Rows.Add(doc.Get("id"), highlightedText);
+                       var stream = saAnalyzer.TokenStream("title", new StringReader(doc.Get("title")));
+                        var highlightedText = hl.GetBestFragments(stream, doc.Get("title"), 1, "...");
+
+                        var stream1 = saAnalyzer.TokenStream("plainText", new StringReader(doc.Get("plainText")));
+                        var htxt = hl.GetBestFragments(stream1, doc.Get("plainText"), 1, "...");
+
+                        dt.Rows.Add(doc.Get("id"), highlightedText,htxt);
                     }
 
 
